@@ -211,9 +211,18 @@ def _find_field(data_dict, *keywords):
     return None
 
 
+def _extract_surface(grid):
+    """extract_surface avec l'argument `algorithm` si disponible (pyvista récent)."""
+    import inspect
+
+    if "algorithm" in inspect.signature(grid.extract_surface).parameters:
+        return grid.extract_surface(algorithm="dataset_surface")
+    return grid.extract_surface()
+
+
 def face_means(grid, x: float, tol: float, pressure: str | None, velocity: str | None) -> dict:
     """Moyennes de p et u_x sur les faces situées en x (à tol près)."""
-    surf = grid.extract_surface(algorithm="dataset_surface")
+    surf = _extract_surface(grid)
     centers = surf.cell_centers().points[:, 0]
     idx = np.flatnonzero(np.abs(centers - x) <= tol)
     if idx.size == 0:
